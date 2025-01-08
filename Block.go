@@ -10,8 +10,7 @@ import (
 )
 
 type Block struct {
-	Timestamp int64
-	//Data      []byte
+	Timestamp    int64
 	Transactions []*Transaction
 	Hash         []byte
 	PrevHash     []byte
@@ -39,18 +38,30 @@ func DeserializeBlock(d []byte) *Block {
 }
 func (b *Block) SetHash() {
 	Timestamp := []byte(strconv.FormatInt(b.Timestamp, 10))
-	headers := bytes.Join([][]byte{Timestamp, b.Data, b.PrevHash}, []byte{})
+	headers := bytes.Join([][]byte{Timestamp, b.HashTransactions(), b.PrevHash}, []byte{})
 	hash := sha256.Sum256(headers)
 	b.Hash = hash[:]
 }
 func newBlock(transactions []*Transaction, prevHash []byte) *Block {
-	block := &Block{time.Now().Unix(), []byte(data), []byte{}, prevHash, 0}
+	block := &Block{time.Now().Unix(), transactions, []byte{}, prevHash, 0}
 	pow := NewProofOfWork(block)
 	nonce, hash := pow.Run()
 	block.Hash = hash[:]
 	block.Nonce = nonce
 	return block
 }
-func NewGenesisBlock() *Block {
-	return newBlock("Genesis Block", []byte{})
+func NewGenesisBlock(coinbase *Transaction) *Block {
+	return newBlock([]*Transaction{coinbase}, []byte{})
+}
+
+func (b *Block) HashTransactions() []byte {
+	var txHashes [][]byte
+	var txHash [32]byte
+
+	for _, tx := range b.Transactions {
+		txHashes = append(txHashes, tx.ID)
+	}
+	txHash = sha256.Sum256(bytes.Join(txHashes, []byte{}))
+
+	return txHash[:]
 }

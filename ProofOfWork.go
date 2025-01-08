@@ -26,7 +26,7 @@ func NewProofOfWork(b *Block) *ProofOfWork {
 
 func (pow *ProofOfWork) prepareData(nonce int) []byte {
 	data := bytes.Join([][]byte{
-		pow.block.Data,
+		pow.block.HashTransactions(),
 		pow.block.PrevHash,
 		[]byte{byte(pow.block.Timestamp)},
 		[]byte{byte(targetBits)},
@@ -41,7 +41,7 @@ func (pow *ProofOfWork) Run() (int, []byte) {
 	var hash [32]byte
 	var nonce int
 
-	fmt.Printf("Mining the block containing \"%s\"\n", pow.block.Data)
+	fmt.Printf("Mining the block containing \"%d\"\n", pow.block.Timestamp)
 
 	for nonce < math.MaxInt64 {
 
